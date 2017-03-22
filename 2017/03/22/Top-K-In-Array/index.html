@@ -88,21 +88,21 @@
 
 
 <meta name="description" content="题目：给一个非空数组，求数组中出现次数最多的k个元素。例如给出数组[1, 1, 1, 2, 2, 3]和k=2，返回[1, 2]
-思路1使用HashMap来对数组中的元素计数并存储，然后使用HashMap中的value构造大顶堆，取k次大顶堆的堆顶元素。
-123456789101112131415 // 使用HashMap+大顶堆来实现（取堆顶的最大k个元素）public static List">
+思路1使用HashMap来对数组中的元素计数并存储，然后使用HashMap中的value构造大顶堆，取k次大顶堆的堆顶元素，同时调整大顶堆堆，取出value对应的key值。
+123456789101112131415 // 使用HashMap+大顶堆来实现（取堆顶的最大">
 <meta property="og:type" content="article">
 <meta property="og:title" content="找出数组中出现次数最多的k个元素">
 <meta property="og:url" content="http://yoursite.com/2017/03/22/Top-K-In-Array/index.html">
 <meta property="og:site_name" content="Yan">
 <meta property="og:description" content="题目：给一个非空数组，求数组中出现次数最多的k个元素。例如给出数组[1, 1, 1, 2, 2, 3]和k=2，返回[1, 2]
-思路1使用HashMap来对数组中的元素计数并存储，然后使用HashMap中的value构造大顶堆，取k次大顶堆的堆顶元素。
-123456789101112131415 // 使用HashMap+大顶堆来实现（取堆顶的最大k个元素）public static List">
-<meta property="og:updated_time" content="2017-03-22T16:41:47.000Z">
+思路1使用HashMap来对数组中的元素计数并存储，然后使用HashMap中的value构造大顶堆，取k次大顶堆的堆顶元素，同时调整大顶堆堆，取出value对应的key值。
+123456789101112131415 // 使用HashMap+大顶堆来实现（取堆顶的最大">
+<meta property="og:updated_time" content="2017-03-22T16:45:32.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="找出数组中出现次数最多的k个元素">
 <meta name="twitter:description" content="题目：给一个非空数组，求数组中出现次数最多的k个元素。例如给出数组[1, 1, 1, 2, 2, 3]和k=2，返回[1, 2]
-思路1使用HashMap来对数组中的元素计数并存储，然后使用HashMap中的value构造大顶堆，取k次大顶堆的堆顶元素。
-123456789101112131415 // 使用HashMap+大顶堆来实现（取堆顶的最大k个元素）public static List">
+思路1使用HashMap来对数组中的元素计数并存储，然后使用HashMap中的value构造大顶堆，取k次大顶堆的堆顶元素，同时调整大顶堆堆，取出value对应的key值。
+123456789101112131415 // 使用HashMap+大顶堆来实现（取堆顶的最大">
 
 
 
@@ -391,7 +391,7 @@
 
       
         <p>题目：给一个非空数组，求数组中出现次数最多的k个元素。例如给出数组[1, 1, 1, 2, 2, 3]和k=2，返回[1, 2]</p>
-<h2 id="思路1"><a href="#思路1" class="headerlink" title="思路1"></a>思路1</h2><p>使用HashMap来对数组中的元素计数并存储，然后使用HashMap中的value构造大顶堆，取k次大顶堆的堆顶元素。</p>
+<h2 id="思路1"><a href="#思路1" class="headerlink" title="思路1"></a>思路1</h2><p>使用HashMap来对数组中的元素计数并存储，然后使用HashMap中的value构造大顶堆，取k次大顶堆的堆顶元素，同时调整大顶堆堆，取出value对应的key值。</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line"> <span class="comment">// 使用HashMap+大顶堆来实现（取堆顶的最大k个元素）</span></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> List <span class="title">topKFrequent</span><span class="params">(<span class="keyword">int</span>[] nums, <span class="keyword">int</span> k)</span> </span>&#123;</div><div class="line">	Map&lt;Integer, Integer&gt; map = <span class="keyword">new</span> HashMap&lt;&gt;();</div><div class="line">	<span class="keyword">for</span> (<span class="keyword">int</span> i : nums) &#123;</div><div class="line">		map.put(i, map.containsKey(i) ? map.get(i) + <span class="number">1</span> : <span class="number">1</span>);</div><div class="line">	&#125;</div><div class="line">	<span class="comment">// 使用java自带的PriorityQueue类来实现，PriorityQueue是优先队列，实际上是一个小顶堆</span></div><div class="line">	PriorityQueue&lt;Map.Entry&lt;Integer, Integer&gt;&gt; pq = <span class="keyword">new</span> PriorityQueue&lt;&gt;((o1, o2) -&gt; o2.getValue() - o1.getValue()); <span class="comment">// 改变排序的方法，使用value作为判断</span></div><div class="line">	pq.addAll(map.entrySet());</div><div class="line">	List ret = <span class="keyword">new</span> ArrayList&lt;&gt;();</div><div class="line">	<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; k; i++) &#123;</div><div class="line">		ret.add(pq.poll().getKey());<span class="comment">// 每次都会去取堆顶的元素，每弹出一个元素都会重新调整堆</span></div><div class="line">	&#125;</div><div class="line">	<span class="keyword">return</span> ret;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
 <p>时间复杂度O(N+klgk+(N-k)lgk) =  O(Nlgk)，N：遍历数组，klgk：建堆，(N-k)lgk：剩余N-k个元素插入堆</p>
 <h2 id="思路二"><a href="#思路二" class="headerlink" title="思路二"></a>思路二</h2><p>使用桶排序的思想，将出现次数为count的元素放入bucket[count]中，然后从bucket的index从大到小遍历。（这里需要注意的是有些出现次数一样的元素，所以我们的bucket数组需要定义成集合数组）<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 使用桶排序的思想</span></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> List <span class="title">topKFrequent2</span><span class="params">(<span class="keyword">int</span>[] nums, <span class="keyword">int</span> k)</span> </span>&#123;</div><div class="line">	List[] bucket = <span class="keyword">new</span> ArrayList[nums.length + <span class="number">1</span>]; <span class="comment">// 定义一个链表的数组，主要是为了解决一个频数出现多次的情况</span></div><div class="line">	Map&lt;Integer, Integer&gt; map = <span class="keyword">new</span> HashMap&lt;&gt;();</div><div class="line">	<span class="keyword">for</span> (<span class="keyword">int</span> i : nums) &#123;</div><div class="line">		map.put(i, map.containsKey(i) ? map.get(i) + <span class="number">1</span> : <span class="number">1</span>);</div><div class="line">	&#125;</div><div class="line">	<span class="keyword">for</span> (<span class="keyword">int</span> key : map.keySet()) &#123;</div><div class="line">		<span class="keyword">int</span> frequency = map.get(key);</div><div class="line">		<span class="keyword">if</span> (bucket[frequency] == <span class="keyword">null</span>) &#123;</div><div class="line">			bucket[frequency] = <span class="keyword">new</span> ArrayList&lt;&gt;();</div><div class="line">		&#125;</div><div class="line">		bucket[frequency].add(key);</div><div class="line">	&#125;</div><div class="line"></div><div class="line">	List ret = <span class="keyword">new</span> ArrayList&lt;&gt;();</div><div class="line"></div><div class="line">	<span class="keyword">for</span> (<span class="keyword">int</span> i = bucket.length - <span class="number">1</span>; i &gt;= <span class="number">0</span> &amp;&amp; ret.size() &lt; k; i--) &#123;</div><div class="line">		<span class="keyword">if</span> (bucket[i] != <span class="keyword">null</span>) &#123;</div><div class="line">			ret.addAll(bucket[i]);</div><div class="line">		&#125;</div><div class="line">	&#125;</div><div class="line">	<span class="keyword">return</span> ret;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
