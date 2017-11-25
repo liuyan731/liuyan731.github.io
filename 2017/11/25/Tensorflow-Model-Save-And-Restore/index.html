@@ -97,7 +97,7 @@
 <meta property="og:description" content="近期做了一些反垃圾的工作，除了使用常用的规则匹配过滤等手段，也采用了一些机器学习方法进行分类预测。我们使用TensorFlow进行模型的训练，训练好的模型需要保存，预测阶段我们需要将模型进行加载还原使用，这就涉及TensorFlow模型的保存与恢复加载。
 总结一下Tensorflow常用的模型保存方式。
 保存checkpoint模型文件（.ckpt）首先，TensorFlow提供了一个非常方便的a">
-<meta property="og:updated_time" content="2017-11-25T14:08:55.000Z">
+<meta property="og:updated_time" content="2017-11-25T15:41:14.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Tensorflow模型的保存与恢复加载">
 <meta name="twitter:description" content="近期做了一些反垃圾的工作，除了使用常用的规则匹配过滤等手段，也采用了一些机器学习方法进行分类预测。我们使用TensorFlow进行模型的训练，训练好的模型需要保存，预测阶段我们需要将模型进行加载还原使用，这就涉及TensorFlow模型的保存与恢复加载。
@@ -382,35 +382,76 @@
       
         <p>近期做了一些反垃圾的工作，除了使用常用的规则匹配过滤等手段，也采用了一些机器学习方法进行分类预测。我们使用TensorFlow进行模型的训练，训练好的模型需要保存，预测阶段我们需要将模型进行加载还原使用，这就涉及TensorFlow模型的保存与恢复加载。</p>
 <p>总结一下Tensorflow常用的模型保存方式。</p>
-<h2 id="保存checkpoint模型文件（-ckpt）"><a href="#保存checkpoint模型文件（-ckpt）" class="headerlink" title="保存checkpoint模型文件（.ckpt）"></a>保存checkpoint模型文件（.ckpt）</h2><p>首先，TensorFlow提供了一个非常方便的api，<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">#### 模型保存</div><div class="line">使用```tf.train.Saver()```来保存模型文件非常方便，下面是一个简单的例子：</div><div class="line">```python</div><div class="line">import tensorflow as tf</div><div class="line">import os</div><div class="line"></div><div class="line">def save_model_ckpt(ckpt_file_path):</div><div class="line">    x = tf.placeholder(tf.int32, name=&apos;x&apos;)</div><div class="line">    y = tf.placeholder(tf.int32, name=&apos;y&apos;)</div><div class="line">    b = tf.Variable(1, name=&apos;b&apos;)</div><div class="line">    xy = tf.multiply(x, y)</div><div class="line">    op = tf.add(xy, b, name=&apos;op_to_store&apos;)</div><div class="line"></div><div class="line">    sess = tf.Session()</div><div class="line">    sess.run(tf.global_variables_initializer())</div><div class="line"></div><div class="line">    path = os.path.dirname(os.path.abspath(ckpt_file_path))</div><div class="line">    if os.path.isdir(path) is False:</div><div class="line">        os.makedirs(path)</div><div class="line"></div><div class="line">    tf.train.Saver().save(sess, ckpt_file_path)</div><div class="line">    </div><div class="line">    # test</div><div class="line">    feed_dict = &#123;x: 2, y: 3&#125;</div><div class="line">    print(sess.run(op, feed_dict))</div></pre></td></tr></table></figure></p>
-<p>程序生成并保存四个文件（在版本0.11之前只会生成三个文件：checkpoint, model.ckpt, model.ckpt.meta）</p>
-<ul>
-<li>checkpoint 文本文件，记录了模型文件的路径信息列表</li>
-<li>model.ckpt.data-00000-of-00001 网络权重信息</li>
-<li>model.ckpt.index .data和.index这两个文件是二进制文件，保存了模型中的变量参数（权重）信息</li>
-<li>model.ckpt.meta 二进制文件，保存了模型的计算图结构信息（模型的网络结构）protobuf</li>
-</ul>
-<p>以上是<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">```python</div><div class="line">tf.train.Saver().save(sess, ckpt_file_path, global_step=1000)</div></pre></td></tr></table></figure></p>
-<p>加上global_step参数代表在每1000次迭代后保存模型，会在模型文件后加上”-1000”，model.ckpt-1000.index, model.ckpt-1000.meta, model.ckpt.data-1000-00000-of-00001</p>
-<p>每1000次迭代保存一次模型，但是模型的结构信息文件不会变，就只用1000次迭代时保存一下，不用相应的每1000次保存一次，所以当我们不需要保存meta文件时，可以加上<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">```python</div><div class="line">tf.train.Saver().save(sess, ckpt_file_path, global_step=1000, write_meta_graph=False)</div></pre></td></tr></table></figure></p>
-<p>如果想每两小时保存一次模型，并且只保存最新的4个模型，可以加上使用<figure class="highlight plain"><figcaption><span>```keep_checkpoint_every_n_hours```参数，如下：</span></figcaption><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">```python</div><div class="line">tf.train.Saver().save(sess, ckpt_file_path, max_to_keep=4, keep_checkpoint_every_n_hours=2)</div></pre></td></tr></table></figure></p>
-<p>同时在<figure class="highlight plain"><figcaption><span>y参数（可传入参数list或dict）：</span></figcaption><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">```python</div><div class="line">tf.train.Saver([x, y]).save(sess, ckpt_file_path)</div></pre></td></tr></table></figure></p>
-<p>ps. 在模型训练过程中需要在保存后拿到的变量或参数名属性name不能丢，不然模型还原后不能通过<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">#### 模型加载还原</div><div class="line">针对上面的模型保存例子，还原模型的过程如下：</div><div class="line">```python</div><div class="line">import tensorflow as tf</div><div class="line"></div><div class="line">def restore_model_ckpt(ckpt_file_path):</div><div class="line">    sess = tf.Session()</div><div class="line">    saver = tf.train.import_meta_graph(&apos;./ckpt/model.ckpt.meta&apos;)  # 加载模型结构</div><div class="line">    saver.restore(sess, tf.train.latest_checkpoint(&apos;./ckpt&apos;))  # 只需要指定目录就可以恢复所有变量信息</div><div class="line"></div><div class="line">    # 直接获取保存的变量</div><div class="line">    print(sess.run(&apos;b:0&apos;))</div><div class="line"></div><div class="line">    # 获取placeholder变量</div><div class="line">    input_x = sess.graph.get_tensor_by_name(&apos;x:0&apos;)</div><div class="line">    input_y = sess.graph.get_tensor_by_name(&apos;y:0&apos;)</div><div class="line">    # 获取需要进行计算的operator</div><div class="line">    op = sess.graph.get_tensor_by_name(&apos;op_to_store:0&apos;)</div><div class="line"></div><div class="line">    # 加入新的操作</div><div class="line">    add_on_op = tf.multiply(op, 2)</div><div class="line"></div><div class="line">    ret = sess.run(add_on_op, &#123;input_x: 5, input_y: 5&#125;)</div><div class="line">    print(ret)</div></pre></td></tr></table></figure></p>
-<p>首先还原模型结构，然后还原变量（参数）信息，最后我们就可以获得已训练的模型中的各种信息了（保存的变量、placeholder变量、operator等），同时可以对获取的变量添加各种新的操作（见以上代码注释）。</p>
-<p>并且，我们也可以加载部分模型，在此基础上加入其它操作，具体可以参考官方文档和demo。</p>
-<blockquote>
-<p>针对ckpt模型文件的保存与还原，stackoverflow上有一个<a href="https://stackoverflow.com/questions/33759623/tensorflow-how-to-save-restore-a-model" target="_blank" rel="external">回答</a>解释比较清晰，可以参考。</p>
-<p>同时cv-tricks.com上面的TensorFlow模型保存与恢复的<a href="http://cv-tricks.com/tensorflow-tutorial/save-restore-tensorflow-models-quick-complete-tutorial/" target="_blank" rel="external">教程</a>也非常好，可以参考。</p>
-<p><a href="https://www.cnblogs.com/denny402/p/6940134.html" target="_blank" rel="external">《tensorflow 1.0 学习：模型的保存与恢复(Saver)》</a>有一些Saver使用技巧。</p>
-</blockquote>
-<h2 id="保存单个模型文件（-pb）"><a href="#保存单个模型文件（-pb）" class="headerlink" title="保存单个模型文件（.pb）"></a>保存单个模型文件（.pb）</h2><p>我自己运行过Tensorflow的inception-v3的demo，发现运行结束后会生成一个.pb的模型文件，这个文件是作为后续预测或迁移学习使用的，就一个文件，非常炫酷，也十分方便。</p>
-<p>这个过程的主要思路是graph_def文件中没有包含网络中的Variable值（通常情况存储了权重），但是却包含了constant值，所以如果我们能把Variable转换为constant（使用<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">ps：这里.pb是模型文件的后缀名，当然我们也可以用其它的后缀（使用.pb与google保持一致 ╮(╯▽╰)╭）</div><div class="line"></div><div class="line">#### 模型保存</div><div class="line">同样根据上面的例子，一个简单的demo：</div><div class="line">```python</div><div class="line">import tensorflow as tf</div><div class="line">import os</div><div class="line">from tensorflow.python.framework import graph_util</div><div class="line"></div><div class="line">def save_mode_pb(pb_file_path):</div><div class="line">    x = tf.placeholder(tf.int32, name=&apos;x&apos;)</div><div class="line">    y = tf.placeholder(tf.int32, name=&apos;y&apos;)</div><div class="line">    b = tf.Variable(1, name=&apos;b&apos;)</div><div class="line">    xy = tf.multiply(x, y)</div><div class="line">    # 这里的输出需要加上name属性</div><div class="line">    op = tf.add(xy, b, name=&apos;op_to_store&apos;)</div><div class="line"></div><div class="line">    sess = tf.Session()</div><div class="line">    sess.run(tf.global_variables_initializer())</div><div class="line"></div><div class="line">    path = os.path.dirname(os.path.abspath(pb_file_path))</div><div class="line">    if os.path.isdir(path) is False:</div><div class="line">        os.makedirs(path)</div><div class="line"></div><div class="line">    # convert_variables_to_constants 需要指定output_node_names，list()，可以多个</div><div class="line">    constant_graph = graph_util.convert_variables_to_constants(sess, sess.graph_def, [&apos;op_to_store&apos;])</div><div class="line">    with tf.gfile.FastGFile(pb_file_path, mode=&apos;wb&apos;) as f:</div><div class="line">        f.write(constant_graph.SerializeToString())</div><div class="line"></div><div class="line">    # test</div><div class="line">    feed_dict = &#123;x: 2, y: 3&#125;</div><div class="line">    print(sess.run(op, feed_dict))</div></pre></td></tr></table></figure></p>
-<p>程序生成并保存一个文件</p>
-<ul>
-<li>model.pb 二进制文件，同时保存了模型网络结构和参数（权重）信息</li>
-</ul>
-<h4 id="模型加载还原"><a href="#模型加载还原" class="headerlink" title="模型加载还原"></a>模型加载还原</h4><p>针对上面的模型保存例子，还原模型的过程如下：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">import</span> tensorflow <span class="keyword">as</span> tf</div><div class="line"><span class="keyword">from</span> tensorflow.python.platform <span class="keyword">import</span> gfile</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">restore_mode_pb</span><span class="params">(pb_file_path)</span>:</span></div><div class="line">    sess = tf.Session()</div><div class="line">    <span class="keyword">with</span> gfile.FastGFile(pb_file_path, <span class="string">'rb'</span>) <span class="keyword">as</span> f:</div><div class="line">        graph_def = tf.GraphDef()</div><div class="line">        graph_def.ParseFromString(f.read())</div><div class="line">        sess.graph.as_default()</div><div class="line">        tf.import_graph_def(graph_def, name=<span class="string">''</span>)</div><div class="line"></div><div class="line">    print(sess.run(<span class="string">'b:0'</span>))</div><div class="line"></div><div class="line">    input_x = sess.graph.get_tensor_by_name(<span class="string">'x:0'</span>)</div><div class="line">    input_y = sess.graph.get_tensor_by_name(<span class="string">'y:0'</span>)</div><div class="line"></div><div class="line">    op = sess.graph.get_tensor_by_name(<span class="string">'op_to_store:0'</span>)</div><div class="line"></div><div class="line">    ret = sess.run(op, &#123;input_x: <span class="number">5</span>, input_y: <span class="number">5</span>&#125;)</div><div class="line">    print(ret)</div></pre></td></tr></table></figure></p>
-<p>模型的还原过程与checkpoint差不多一样。</p>
+<h2 id="保存checkpoint模型文件（-ckpt）"><a href="#保存checkpoint模型文件（-ckpt）" class="headerlink" title="保存checkpoint模型文件（.ckpt）"></a>保存checkpoint模型文件（.ckpt）</h2><p>首先，TensorFlow提供了一个非常方便的api，<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">#### 模型保存</div><div class="line">使用```tf.train.Saver()```来保存模型文件非常方便，下面是一个简单的例子：</div></pre></td></tr></table></figure></p>
+<p>import tensorflow as tf<br>import os</p>
+<p>def save_model_ckpt(ckpt_file_path):<br>    x = tf.placeholder(tf.int32, name=’x’)<br>    y = tf.placeholder(tf.int32, name=’y’)<br>    b = tf.Variable(1, name=’b’)<br>    xy = tf.multiply(x, y)<br>    op = tf.add(xy, b, name=’op_to_store’)</p>
+<pre><code>sess = tf.Session()
+sess.run(tf.global_variables_initializer())
+
+path = os.path.dirname(os.path.abspath(ckpt_file_path))
+if os.path.isdir(path) is False:
+    os.makedirs(path)
+
+tf.train.Saver().save(sess, ckpt_file_path)
+
+# test
+feed_dict = {x: 2, y: 3}
+print(sess.run(op, feed_dict))
+</code></pre><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">程序生成并保存四个文件（在版本0.11之前只会生成三个文件：checkpoint, model.ckpt, model.ckpt.meta）</div><div class="line"></div><div class="line">- checkpoint 文本文件，记录了模型文件的路径信息列表</div><div class="line">- model.ckpt.data-00000-of-00001 网络权重信息</div><div class="line">- model.ckpt.index .data和.index这两个文件是二进制文件，保存了模型中的变量参数（权重）信息</div><div class="line">- model.ckpt.meta 二进制文件，保存了模型的计算图结构信息（模型的网络结构）protobuf</div><div class="line"></div><div class="line">以上是```tf.train.Saver().save()```的基本用法，```save()```方法还有很多可配置的参数：</div></pre></td></tr></table></figure>
+<p>tf.train.Saver().save(sess, ckpt_file_path, global_step=1000)<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">加上global_step参数代表在每1000次迭代后保存模型，会在模型文件后加上&quot;-1000&quot;，model.ckpt-1000.index, model.ckpt-1000.meta, model.ckpt.data-1000-00000-of-00001</div><div class="line"></div><div class="line">每1000次迭代保存一次模型，但是模型的结构信息文件不会变，就只用1000次迭代时保存一下，不用相应的每1000次保存一次，所以当我们不需要保存meta文件时，可以加上```write_meta_graph=False```参数，如下：</div></pre></td></tr></table></figure></p>
+<p>tf.train.Saver().save(sess, ckpt_file_path, global_step=1000, write_meta_graph=False)<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">如果想每两小时保存一次模型，并且只保存最新的4个模型，可以加上使用```max_to_keep```（默认值为5，如果想每训练一个epoch就保存一次，可以将其设置为None或0，但是没啥用不推荐）, ```keep_checkpoint_every_n_hours```参数，如下：</div></pre></td></tr></table></figure></p>
+<p>tf.train.Saver().save(sess, ckpt_file_path, max_to_keep=4, keep_checkpoint_every_n_hours=2)<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">同时在```tf.train.Saver()```类中，如果我们不指定任何信息，则会保存所有的参数信息，我们也可以指定部分想要保存的内容，例如只保存x, y参数（可传入参数list或dict）：</div></pre></td></tr></table></figure></p>
+<p>tf.train.Saver([x, y]).save(sess, ckpt_file_path)<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">ps. 在模型训练过程中需要在保存后拿到的变量或参数名属性name不能丢，不然模型还原后不能通过```get_tensor_by_name()```获取。</div><div class="line"></div><div class="line">#### 模型加载还原</div><div class="line">针对上面的模型保存例子，还原模型的过程如下：</div></pre></td></tr></table></figure></p>
+<p>import tensorflow as tf</p>
+<p>def restore_model_ckpt(ckpt_file_path):<br>    sess = tf.Session()<br>    saver = tf.train.import_meta_graph(‘./ckpt/model.ckpt.meta’)  # 加载模型结构<br>    saver.restore(sess, tf.train.latest_checkpoint(‘./ckpt’))  # 只需要指定目录就可以恢复所有变量信息</p>
+<pre><code># 直接获取保存的变量
+print(sess.run(&apos;b:0&apos;))
+
+# 获取placeholder变量
+input_x = sess.graph.get_tensor_by_name(&apos;x:0&apos;)
+input_y = sess.graph.get_tensor_by_name(&apos;y:0&apos;)
+# 获取需要进行计算的operator
+op = sess.graph.get_tensor_by_name(&apos;op_to_store:0&apos;)
+
+# 加入新的操作
+add_on_op = tf.multiply(op, 2)
+
+ret = sess.run(add_on_op, {input_x: 5, input_y: 5})
+print(ret)
+</code></pre><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div></pre></td><td class="code"><pre><div class="line">首先还原模型结构，然后还原变量（参数）信息，最后我们就可以获得已训练的模型中的各种信息了（保存的变量、placeholder变量、operator等），同时可以对获取的变量添加各种新的操作（见以上代码注释）。</div><div class="line"></div><div class="line">并且，我们也可以加载部分模型，在此基础上加入其它操作，具体可以参考官方文档和demo。</div><div class="line"></div><div class="line">&gt; 针对ckpt模型文件的保存与还原，stackoverflow上有一个[回答](https://stackoverflow.com/questions/33759623/tensorflow-how-to-save-restore-a-model)解释比较清晰，可以参考。</div><div class="line"></div><div class="line">&gt; 同时cv-tricks.com上面的TensorFlow模型保存与恢复的[教程](http://cv-tricks.com/tensorflow-tutorial/save-restore-tensorflow-models-quick-complete-tutorial/)也非常好，可以参考。</div><div class="line"></div><div class="line">&gt; [《tensorflow 1.0 学习：模型的保存与恢复(Saver)》](https://www.cnblogs.com/denny402/p/6940134.html)有一些Saver使用技巧。</div><div class="line"></div><div class="line">## 保存单个模型文件（.pb）</div><div class="line">我自己运行过Tensorflow的inception-v3的demo，发现运行结束后会生成一个.pb的模型文件，这个文件是作为后续预测或迁移学习使用的，就一个文件，非常炫酷，也十分方便。</div><div class="line"></div><div class="line">这个过程的主要思路是graph_def文件中没有包含网络中的Variable值（通常情况存储了权重），但是却包含了constant值，所以如果我们能把Variable转换为constant（使用```graph_util.convert_variables_to_constants()```函数），即可达到使用一个文件同时存储网络架构与权重的目标。</div><div class="line"></div><div class="line">ps：这里.pb是模型文件的后缀名，当然我们也可以用其它的后缀（使用.pb与google保持一致 ╮(╯▽╰)╭）</div><div class="line"></div><div class="line">#### 模型保存</div><div class="line">同样根据上面的例子，一个简单的demo：</div></pre></td></tr></table></figure>
+<p>import tensorflow as tf<br>import os<br>from tensorflow.python.framework import graph_util</p>
+<p>def save_mode_pb(pb_file_path):<br>    x = tf.placeholder(tf.int32, name=’x’)<br>    y = tf.placeholder(tf.int32, name=’y’)<br>    b = tf.Variable(1, name=’b’)<br>    xy = tf.multiply(x, y)</p>
+<pre><code># 这里的输出需要加上name属性
+op = tf.add(xy, b, name=&apos;op_to_store&apos;)
+
+sess = tf.Session()
+sess.run(tf.global_variables_initializer())
+
+path = os.path.dirname(os.path.abspath(pb_file_path))
+if os.path.isdir(path) is False:
+    os.makedirs(path)
+
+# convert_variables_to_constants 需要指定output_node_names，list()，可以多个
+constant_graph = graph_util.convert_variables_to_constants(sess, sess.graph_def, [&apos;op_to_store&apos;])
+with tf.gfile.FastGFile(pb_file_path, mode=&apos;wb&apos;) as f:
+    f.write(constant_graph.SerializeToString())
+
+# test
+feed_dict = {x: 2, y: 3}
+print(sess.run(op, feed_dict))
+</code></pre><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">程序生成并保存一个文件</div><div class="line">- model.pb 二进制文件，同时保存了模型网络结构和参数（权重）信息</div><div class="line"></div><div class="line">#### 模型加载还原</div><div class="line">针对上面的模型保存例子，还原模型的过程如下：</div></pre></td></tr></table></figure>
+<p>import tensorflow as tf<br>from tensorflow.python.platform import gfile</p>
+<p>def restore_mode_pb(pb_file_path):<br>    sess = tf.Session()<br>    with gfile.FastGFile(pb_file_path, ‘rb’) as f:<br>        graph_def = tf.GraphDef()<br>        graph_def.ParseFromString(f.read())<br>        sess.graph.as_default()<br>        tf.import_graph_def(graph_def, name=’’)</p>
+<pre><code>print(sess.run(&apos;b:0&apos;))
+
+input_x = sess.graph.get_tensor_by_name(&apos;x:0&apos;)
+input_y = sess.graph.get_tensor_by_name(&apos;y:0&apos;)
+
+op = sess.graph.get_tensor_by_name(&apos;op_to_store:0&apos;)
+
+ret = sess.run(op, {input_x: 5, input_y: 5})
+print(ret)
+</code></pre><p>```<br>模型的还原过程与checkpoint差不多一样。</p>
 <blockquote>
 <p>CSDN<a href="http://blog.csdn.net/encodets/article/details/54428456" target="_blank" rel="external">《将TensorFlow的网络导出为单个文件》</a>上介绍了TensorFlow保存单个模型文件的方式，大同小异，可以看看。</p>
 </blockquote>
@@ -665,7 +706,7 @@ var jiathis_config = {data_track_clickback:'true'};
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#保存checkpoint模型文件（-ckpt）"><span class="nav-number">1.</span> <span class="nav-text">保存checkpoint模型文件（.ckpt）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#保存单个模型文件（-pb）"><span class="nav-number">2.</span> <span class="nav-text">保存单个模型文件（.pb）</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#模型加载还原"><span class="nav-number">2.0.1.</span> <span class="nav-text">模型加载还原</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#思考"><span class="nav-number">3.</span> <span class="nav-text">思考</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#保存checkpoint模型文件（-ckpt）"><span class="nav-number">1.</span> <span class="nav-text">保存checkpoint模型文件（.ckpt）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#思考"><span class="nav-number">2.</span> <span class="nav-text">思考</span></a></li></ol></div>
             
 
           </div>
