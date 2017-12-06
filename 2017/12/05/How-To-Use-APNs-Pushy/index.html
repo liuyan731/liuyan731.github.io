@@ -1,0 +1,1082 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="apns,pushy,apple," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.0" />
+
+
+
+
+
+
+<meta name="description" content="最近对项目组的老的苹果IOS推送进行了升级修改。看了看苹果的接口文档，感觉自己直接来写一个保证稳定和高效的接口还是有点难度，同时为了避免重复造轮子（懒），囧….调研了一些开源常用的库之后，选择了Turo团队开发和维护的pushy。
+APNs和Pushy苹果设备的消息推送是依靠苹果的APNs（Apple Push Notification service）服务的，APNs的官方简介如下：
+
+Appl">
+<meta property="og:type" content="article">
+<meta property="og:title" content="使用Pushy进行APNs消息推送">
+<meta property="og:url" content="http://yoursite.com/2017/12/05/How-To-Use-APNs-Pushy/index.html">
+<meta property="og:site_name" content="Sea Salt">
+<meta property="og:description" content="最近对项目组的老的苹果IOS推送进行了升级修改。看了看苹果的接口文档，感觉自己直接来写一个保证稳定和高效的接口还是有点难度，同时为了避免重复造轮子（懒），囧….调研了一些开源常用的库之后，选择了Turo团队开发和维护的pushy。
+APNs和Pushy苹果设备的消息推送是依靠苹果的APNs（Apple Push Notification service）服务的，APNs的官方简介如下：
+
+Appl">
+<meta property="og:image" content="https://raw.githubusercontent.com/liuyan731/tuchuang/master/blog/How-To-Use-APNs-Pushy.jpg">
+<meta property="og:updated_time" content="2017-12-06T17:08:49.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="使用Pushy进行APNs消息推送">
+<meta name="twitter:description" content="最近对项目组的老的苹果IOS推送进行了升级修改。看了看苹果的接口文档，感觉自己直接来写一个保证稳定和高效的接口还是有点难度，同时为了避免重复造轮子（懒），囧….调研了一些开源常用的库之后，选择了Turo团队开发和维护的pushy。
+APNs和Pushy苹果设备的消息推送是依靠苹果的APNs（Apple Push Notification service）服务的，APNs的官方简介如下：
+
+Appl">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/liuyan731/tuchuang/master/blog/How-To-Use-APNs-Pushy.jpg">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":0,"b2t":false,"scrollpercent":false},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 'undefined',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2017/12/05/How-To-Use-APNs-Pushy/"/>
+
+
+
+
+
+  <title> 使用Pushy进行APNs消息推送 | Sea Salt </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Sea Salt</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">Legends Never Die.</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/12/05/How-To-Use-APNs-Pushy/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="海盐">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpeg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Sea Salt">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                使用Pushy进行APNs消息推送
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-12-05T23:11:00+08:00">
+                2017-12-05
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Web/" itemprop="url" rel="index">
+                    <span itemprop="name">Web</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+             <span id="/2017/12/05/How-To-Use-APNs-Pushy/" class="leancloud_visitors" data-flag-title="使用Pushy进行APNs消息推送">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数 </span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>最近对项目组的老的苹果IOS推送进行了升级修改。看了看苹果的接口文档，感觉自己直接来写一个保证稳定和高效的接口还是有点难度，同时为了避免重复造轮子（懒），囧….调研了一些开源常用的库之后，选择了Turo团队开发和维护的<a href="https://github.com/relayrides/pushy" target="_blank" rel="external">pushy</a>。</p>
+<h2 id="APNs和Pushy"><a href="#APNs和Pushy" class="headerlink" title="APNs和Pushy"></a>APNs和Pushy</h2><p>苹果设备的消息推送是依靠苹果的APNs（Apple Push Notification service）服务的，<a href="https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/APNSOverview.html#//apple_ref/doc/uid/TP40008194-CH8-SW1" target="_blank" rel="external">APNs</a>的官方简介如下：</p>
+<blockquote>
+<p>Apple Push Notification service (APNs) is the centerpiece of the remote notifications feature. It is a robust, secure, and highly efficient service for app developers to propagate information to iOS (and, indirectly, watchOS), tvOS, and macOS devices.</p>
+</blockquote>
+<p>IOS设备（tvOS、macOS）上的所有消息推送都需要经过APNs，APNs服务确实非常厉害，每天需要推送上百亿的消息，可靠、安全、高效。就算是微信和QQ这种用户级别的即时通讯app在程序没有启动或者后台运行过程中也是需要使用APNs的（当程序启动时，使用自己建立的长连接），只不过腾讯优化了整条从他们服务器到苹果服务器的线路而已，所以觉得推送要快（参考<a href="https://www.zhihu.com/question/20654687" target="_blank" rel="external">知乎</a>）。</p>
+<p>项目组老的苹果推送服务使用的是苹果以前的基于二进制socket的APNs，同时使用的是一个<a href="https://github.com/fernandospr/javapns-jdk16" target="_blank" rel="external">javapns</a>的开源库，这个javapns貌似效果不是很好，在网上也有人有过讨论。javapns现在也停止维护DEPRECATED掉了。作者建议转向基于苹果新APNs服务的库。</p>
+<p>苹果新APNs基于HTTP/2，通过连接复用，更加高效，当然还有其它方面的优化和改善，可以参考<a href="http://www.jianshu.com/p/ace1b422bad4" target="_blank" rel="external">APNs的一篇介绍</a>，讲解的比较清楚。</p>
+<p>再说一下我们使用的<a href="https://github.com/relayrides/pushy" target="_blank" rel="external">Pushy</a>，官方简介如下：</p>
+<blockquote>
+<p>Pushy is a Java library for sending APNs (iOS, macOS, and Safari) push notifications. It is written and maintained by the engineers at Turo……<strong>We believe that Pushy is already the best tool for sending APNs push notifications from Java applications</strong>, and we hope you’ll help us make it even better via bug reports and pull requests. </p>
+</blockquote>
+<p>Pushy的文档和说明很全，讨论也很活跃，作者基本有问必答，大部分疑问都可以找到答案，使用难度也不大。</p>
+<h2 id="使用Pushy进行APNs消息推送"><a href="#使用Pushy进行APNs消息推送" class="headerlink" title="使用Pushy进行APNs消息推送"></a>使用Pushy进行APNs消息推送</h2><h3 id="首先加入包"><a href="#首先加入包" class="headerlink" title="首先加入包"></a>首先加入包</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">&lt;dependency&gt;</div><div class="line">    &lt;groupId&gt;com.turo&lt;/groupId&gt;</div><div class="line">    &lt;artifactId&gt;pushy&lt;/artifactId&gt;</div><div class="line">    &lt;version&gt;0.11.1&lt;/version&gt;</div><div class="line">&lt;/dependency&gt;</div></pre></td></tr></table></figure>
+<h3 id="身份认证"><a href="#身份认证" class="headerlink" title="身份认证"></a>身份认证</h3><p>苹果APNs提供了两种认证的方式：基于JWT的身份信息token认证和基于证书的身份认证。Pushy也同样支持这两种认证方式，这里我们使用证书认证方式，关于token认证方式可以查看Pushy的文档。</p>
+<p>如何获取苹果APNs身份认证证书可以查考<a href="https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/APNSOverview.html" target="_blank" rel="external">官方文档</a>。</p>
+<h3 id="Pushy使用"><a href="#Pushy使用" class="headerlink" title="Pushy使用"></a>Pushy使用</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">ApnsClient apnsClient = new ApnsClientBuilder()</div><div class="line">    .setClientCredentials(new File(&quot;/path/to/certificate.p12&quot;), &quot;p12-file-password&quot;)</div><div class="line">    .build();</div></pre></td></tr></table></figure>
+<p>ps. 这里的setClientCredentials函数也可以支持传入一个InputStream和证书密码。</p>
+<p>同时也可以通过setApnsServer函数来指定是开发环境还是生产环境：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">ApnsClient apnsClient = new ApnsClientBuilder().setApnsServer(ApnsClientBuilder.DEVELOPMENT_APNS_HOST)</div><div class="line">    .setClientCredentials(new File(&quot;/path/to/certificate.p12&quot;), &quot;p12-file-password&quot;)</div><div class="line">    .build();</div></pre></td></tr></table></figure></p>
+<p>Pushy是基于Netty的，通过ApnsClientBuilder我们可以根据需要来修改ApnsClient的连接数和EventLoopGroups的线程数。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">EventLoopGroup eventLoopGroup = new NioEventLoopGroup(4);</div><div class="line">ApnsClient apnsClient = new ApnsClientBuilder()</div><div class="line">        .setClientCredentials(new File(&quot;/path/to/certificate.p12&quot;), &quot;p12-file-password&quot;)</div><div class="line">        .setConcurrentConnections(4).setEventLoopGroup(eventLoopGroup).build();</div></pre></td></tr></table></figure>
+<p>关于连接数和EventLoopGroup线程数官网有如下的说明，简单来说，不要配置EventLoopGroups的线程数超过APNs连接数。</p>
+<blockquote>
+<p>Because connections are bound to a single event loop (which is bound to a single thread), it never makes sense to give an ApnsClient more threads in an event loop than concurrent connections. A client with an eight-thread EventLoopGroup that is configured to maintain only one connection will use one thread from the group, but the other seven will remain idle. Opening a large number of connections on a small number of threads will likely reduce overall efficiency by increasing competition for CPU time.</p>
+</blockquote>
+<p>关于消息的推送，注意一定要使用<strong>异步操作</strong>，Pushy发送消息会返回一个Netty Future对象，通过它可以拿到消息发送的情况。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">for (final ApnsPushNotification pushNotification : collectionOfPushNotifications) &#123;</div><div class="line">    final Future sendNotificationFuture = apnsClient.sendNotification(pushNotification);</div><div class="line"></div><div class="line">    sendNotificationFuture.addListener(new GenericFutureListener&lt;Future&lt;PushNotificationResponse&gt;&gt;() &#123;</div><div class="line">        </div><div class="line">        @Override</div><div class="line">        public void operationComplete(final Future&lt;PushNotificationResponse&gt; future) throws Exception &#123;</div><div class="line">            // This will get called when the sever has replied and returns immediately</div><div class="line">            final PushNotificationResponse response = future.getNow();</div><div class="line">        &#125;</div><div class="line">    &#125;);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>APNs服务器可以保证同时发送1500条消息，当超过这个限制时，Pushy会缓存消息，所以我们不必担心异步操作发送的消息过多（当我们的消息非常多，达到上亿时，我们也得做一些控制，避免缓存过大，内存不足，Pushy给出了使用Semaphore的解决方法）。</p>
+<blockquote>
+<p>The APNs server allows for (at the time of this writing) 1,500 notifications in flight at any time. If we hit that limit, Pushy will buffer notifications automatically behind the scenes and send them to the server as in-flight notifications are resolved.</p>
+<p>In short, asynchronous operation allows Pushy to make the most of local resources (especially CPU time) by sending notifications as quickly as possible.</p>
+</blockquote>
+<p>以上仅是Pushy的基本用法，在我们的生产环境中情况可能会更加复杂，我们可能需要知道什么时候所有推送都完成了，可能需要对推送成功消息进行计数<br>，可能需要防止内存不足，也可能需要对不同的发送结果进行不同处理….不多说，上代码。</p>
+<h3 id="最佳实践"><a href="#最佳实践" class="headerlink" title="最佳实践"></a>最佳实践</h3><p>参考Pushy的<a href="https://github.com/relayrides/pushy/wiki/Best-practices" target="_blank" rel="external">官方最佳实践</a>，我们加入了如下操作：</p>
+<ul>
+<li>通过Semaphore来进行流控，防止缓存过大，内存不足</li>
+<li>通过CountDownLatch来标记消息是否发送完成</li>
+<li>使用AtomicLong完成匿名内部类operationComplete方法中的计数</li>
+<li>使用Netty的Future对象进行消息推送结果的判断</li>
+</ul>
+<p>具体用法参考如下代码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div></pre></td><td class="code"><pre><div class="line">public class IOSPush &#123;</div><div class="line"></div><div class="line">    private static final Logger logger = LoggerFactory.getLogger(IOSPush.class);</div><div class="line"></div><div class="line">    private static final ApnsClient apnsClient = null;</div><div class="line"></div><div class="line">    private static final Semaphore semaphore = new Semaphore(10000);</div><div class="line"></div><div class="line">    public void push(final List&lt;String&gt; deviceTokens, String alertTitle, String alertBody) &#123;</div><div class="line"></div><div class="line">        long startTime = System.currentTimeMillis();</div><div class="line"></div><div class="line">        if (apnsClient == null) &#123;</div><div class="line">            try &#123;</div><div class="line">                EventLoopGroup eventLoopGroup = new NioEventLoopGroup(4);</div><div class="line">                apnsClient = new ApnsClientBuilder().setApnsServer(ApnsClientBuilder.DEVELOPMENT_APNS_HOST)</div><div class="line">                        .setClientCredentials(new File(&quot;/path/to/certificate.p12&quot;), &quot;p12-file-password&quot;)</div><div class="line">                        .setConcurrentConnections(4).setEventLoopGroup(eventLoopGroup).build();</div><div class="line">            &#125; catch (Exception e) &#123;</div><div class="line">                logger.error(&quot;ios get pushy apns client failed!&quot;);</div><div class="line">                e.printStackTrace();</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        long total = deviceTokens.size();</div><div class="line"></div><div class="line">        final CountDownLatch latch = new CountDownLatch(deviceTokens.size());</div><div class="line"></div><div class="line">        final AtomicLong successCnt = new AtomicLong(0);</div><div class="line"></div><div class="line">        long startPushTime =  System.currentTimeMillis();</div><div class="line"></div><div class="line">        for (String deviceToken : deviceTokens) &#123;</div><div class="line">            ApnsPayloadBuilder payloadBuilder = new ApnsPayloadBuilder();</div><div class="line">            payloadBuilder.setAlertBody(alertBody);</div><div class="line">            payloadBuilder.setAlertTitle(alertTitle);</div><div class="line">            </div><div class="line">            String payload = payloadBuilder.buildWithDefaultMaximumLength();</div><div class="line">            final String token = TokenUtil.sanitizeTokenString(deviceToken);</div><div class="line">            SimpleApnsPushNotification pushNotification = new SimpleApnsPushNotification(token, &quot;com.example.myApp&quot;, payload);</div><div class="line"></div><div class="line">            try &#123;</div><div class="line">                semaphore.acquire();</div><div class="line">            &#125; catch (InterruptedException e) &#123;</div><div class="line">                logger.error(&quot;ios push get semaphore failed, deviceToken:&#123;&#125;&quot;, deviceToken);</div><div class="line">                e.printStackTrace();</div><div class="line">            &#125;</div><div class="line">            final Future&lt;PushNotificationResponse&lt;SimpleApnsPushNotification&gt;&gt; future = apnsClient.sendNotification(pushNotification);</div><div class="line"></div><div class="line">            future.addListener(new GenericFutureListener&lt;Future&lt;PushNotificationResponse&gt;&gt;() &#123;</div><div class="line">                @Override</div><div class="line">                public void operationComplete(Future&lt;PushNotificationResponse&gt; pushNotificationResponseFuture) throws Exception &#123;</div><div class="line">                    if (future.isSuccess()) &#123;</div><div class="line">                        final PushNotificationResponse&lt;SimpleApnsPushNotification&gt; response = future.getNow();</div><div class="line">                        if (response.isAccepted()) &#123;</div><div class="line">                            successCnt.incrementAndGet();</div><div class="line">                        &#125; else &#123;</div><div class="line">                            Date invalidTime = response.getTokenInvalidationTimestamp();</div><div class="line">                            logger.error(&quot;Notification rejected by the APNs gateway: &quot; + response.getRejectionReason());</div><div class="line">                            if (invalidTime != null) &#123;</div><div class="line">                                logger.error(&quot;\t…and the token is invalid as of &quot; + response.getTokenInvalidationTimestamp());</div><div class="line">                            &#125;</div><div class="line">                        &#125;</div><div class="line">                    &#125; else &#123;</div><div class="line">                        logger.error(&quot;send notification device token=&#123;&#125; is failed &#123;&#125; &quot;, token, future.cause().getMessage());</div><div class="line">                    &#125;</div><div class="line">                    latch.countDown();</div><div class="line">                    semaphore.release();</div><div class="line">                &#125;</div><div class="line">            &#125;);</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        try &#123;</div><div class="line">            latch.await(20, TimeUnit.SECONDS);</div><div class="line">        &#125; catch (InterruptedException e) &#123;</div><div class="line">            logger.error(&quot;ios push latch await failed!&quot;);</div><div class="line">            e.printStackTrace();</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        long endPushTime = System.currentTimeMillis();</div><div class="line"></div><div class="line">        logger.info(&quot;test pushMessage success. [共推送&quot; + total + &quot;个][成功&quot; + (successCnt.get()) + &quot;个], </div><div class="line">            totalcost= &quot; + (endPushTime - startTime) + &quot;, pushCost=&quot; + (endPushTime - startPushTime));</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<ul>
+<li>关于多线程调用client</li>
+</ul>
+<blockquote>
+<p>Pushy ApnsClient是线程安全的，可以使用多线程来调用</p>
+</blockquote>
+<ul>
+<li>关于创建多个client</li>
+</ul>
+<p>创建多个client是可以加快发送速度的，但是提升并不大，作者建议：</p>
+<blockquote>
+<p>ApnsClient instances are designed to stick around for a long time. They’re thread-safe and can be shared between many threads in a large application. We recommend creating a single client (per APNs certificate/key), then keeping that client around for the lifetime of your application.</p>
+</blockquote>
+<ul>
+<li>关于APNs响应信息（错误信息）<blockquote>
+<p>可以查看官网的error code表格（<a href="https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/CommunicatingwithAPNs.html#//apple_ref/doc/uid/TP40008194-CH11-SW1" target="_blank" rel="external">链接</a>），了解出错情况，及时调整。</p>
+</blockquote>
+</li>
+</ul>
+<h2 id="Pushy性能"><a href="#Pushy性能" class="headerlink" title="Pushy性能"></a>Pushy性能</h2><p>作者在Google讨论组中说Pushy推送可以单核单线程达到10k/s-20k/s，如下图所示：</p>
+<p><img src="https://raw.githubusercontent.com/liuyan731/tuchuang/master/blog/How-To-Use-APNs-Pushy.jpg" alt="pushy-discuss"><br><em>作者关于创建多client的建议及Pushy性能描述</em></p>
+<p>但是可能是网络或其他原因，我的测试结果没有这么好，把测试结果贴出来，仅供参考：</p>
+<p>ps. 由于是测试，没有大量的设备可以用于群发推送测试，所以以往一个设备发送多条推送替代。这里短时间往一个设备发送大量的推送，APNs会报TooManyRequests错误，Too many requests were made consecutively to the same device token。所以会有少量消息无法发出。</p>
+<p>ps. 这里的推送时间，没有加上client初始化的时间。</p>
+<p>ps. 消息推送时间与被推消息的大小有关系，这里我在测试时没有控制消息变量（都是我瞎填的，都是很短的消息）所以数据<strong>仅供参考</strong>。</p>
+<ul>
+<li>ConcurrentConnections: 1, EventLoopGroup Thread: 1</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th style="text-align:center"></th>
+<th style="text-align:left">推送1个设备</th>
+<th style="text-align:right">推送13个设备</th>
+<th style="text-align:center">同一设备推100条</th>
+<th style="text-align:center">同一设备推1000条</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">平均推送成功(个)</td>
+<td style="text-align:left">1</td>
+<td style="text-align:right">13</td>
+<td style="text-align:center">100</td>
+<td style="text-align:center">998</td>
+</tr>
+<tr>
+<td style="text-align:center">平均推送耗时(ms)</td>
+<td style="text-align:left">222</td>
+<td style="text-align:right">500</td>
+<td style="text-align:center">654</td>
+<td style="text-align:center">3200</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>ConcurrentConnections: 5, EventLoopGroup Thread: 1</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th style="text-align:center"></th>
+<th style="text-align:left">推送1个设备</th>
+<th style="text-align:right">推送13个设备</th>
+<th style="text-align:center">同一设备推100条</th>
+<th style="text-align:center">同一设备推1000条</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">平均推送成功(个)</td>
+<td style="text-align:left">1</td>
+<td style="text-align:right">13</td>
+<td style="text-align:center">100</td>
+<td style="text-align:center">999</td>
+</tr>
+<tr>
+<td style="text-align:center">平均推送耗时(ms)</td>
+<td style="text-align:left">310</td>
+<td style="text-align:right">330</td>
+<td style="text-align:center">1600</td>
+<td style="text-align:center">1200</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>ConcurrentConnections: 4, EventLoopGroup Thread: 4</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th style="text-align:center"></th>
+<th style="text-align:left">推送1个设备</th>
+<th style="text-align:right">推送13个设备</th>
+<th style="text-align:center">同一设备推100条</th>
+<th style="text-align:center">同一设备推1000条</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">平均推送成功(个)</td>
+<td style="text-align:left">1</td>
+<td style="text-align:right">13</td>
+<td style="text-align:center">100</td>
+<td style="text-align:center">999</td>
+</tr>
+<tr>
+<td style="text-align:center">平均推送耗时(ms)</td>
+<td style="text-align:left">250</td>
+<td style="text-align:right">343</td>
+<td style="text-align:center">700</td>
+<td style="text-align:center">1700</td>
+</tr>
+</tbody>
+</table>
+<p>关于性能优化也可以看看官网作者的建议：<a href="https://github.com/relayrides/pushy/wiki/Best-practices" target="_blank" rel="external">Threads, concurrent connections, and performance</a></p>
+<p>大家有测试的数据也可以分享出来一起讨论一下。</p>
+<h2 id="思考"><a href="#思考" class="headerlink" title="思考"></a>思考</h2><p>苹果APNs一直在更新优化，一致在拥抱新技术（HTTP/2，JWT等），是一个非常了不起的服务。</p>
+<p>自己来直接调用APNs服务来达到生成环境要求还是有点困难。Turo给我们提供了一个很好的Java库：Pushy。Pushy还有一些其他的功能与用法（Metrics、proxy、Logging…），总体来说还是非常不错的。</p>
+<p>同时感觉我们使用Pushy还可以调优…</p>
+<hr>
+<p><em>2017/12/07 done</em></p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/apns/" rel="tag"># apns</a>
+          
+            <a href="/tags/pushy/" rel="tag"># pushy</a>
+          
+            <a href="/tags/apple/" rel="tag"># apple</a>
+          
+        </div>
+      
+
+      
+        
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/11/25/Tensorflow-Model-Save-And-Restore/" rel="next" title="Tensorflow模型的保存与恢复加载">
+                <i class="fa fa-chevron-left"></i> Tensorflow模型的保存与恢复加载
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        <!-- JiaThis Button BEGIN -->
+<div class="jiathis_style">
+	<a class="jiathis_button_tsina"></a>
+	<a class="jiathis_button_weixin"></a>
+	<a class="jiathis_button_douban"></a>
+	<a href="http://www.jiathis.com/share?uid=2149188" class="jiathis jiathis_txt jtico jtico_jiathis" target="_blank"></a>
+	<a class="jiathis_counter_style"></a>
+</div>
+<script type="text/javascript">
+var jiathis_config = {data_track_clickback:'true'};
+</script>
+<script type="text/javascript" src="http://v3.jiathis.com/code/jia.js?uid=2149188" charset="utf-8"></script>
+<!-- JiaThis Button END -->
+
+      
+    </div>
+  </div>
+
+          
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div id="uyan_frame"></div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.jpeg"
+               alt="海盐" />
+          <p class="site-author-name" itemprop="name">海盐</p>
+           
+              <p class="site-description motion-element" itemprop="description">be brave...</p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives">
+                <span class="site-state-item-count">10</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-categories">
+              <a href="/categories/index.html">
+                <span class="site-state-item-count">6</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/tags/index.html">
+                <span class="site-state-item-count">16</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="mailto:liuyan_thu@163.com" target="_blank" title="Mail">
+                  
+                    <i class="fa fa-fw fa-envelope-square"></i>
+                  
+                  Mail
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/liuyan731" target="_blank" title="Github">
+                  
+                    <i class="fa fa-fw fa-github-square"></i>
+                  
+                  Github
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://www.linkedin.com/in/liuyan731/" target="_blank" title="Linkedin">
+                  
+                    <i class="fa fa-fw fa-linkedin"></i>
+                  
+                  Linkedin
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://weibo.com/liuyan731" target="_blank" title="Weibo">
+                  
+                    <i class="fa fa-fw fa-weibo"></i>
+                  
+                  Weibo
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://about.me/liu-yan" target="_blank" title="About.me">
+                  
+                    <i class="fa fa-fw fa-id-badge"></i>
+                  
+                  About.me
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#APNs和Pushy"><span class="nav-number">1.</span> <span class="nav-text">APNs和Pushy</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#使用Pushy进行APNs消息推送"><span class="nav-number">2.</span> <span class="nav-text">使用Pushy进行APNs消息推送</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#首先加入包"><span class="nav-number">2.1.</span> <span class="nav-text">首先加入包</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#身份认证"><span class="nav-number">2.2.</span> <span class="nav-text">身份认证</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Pushy使用"><span class="nav-number">2.3.</span> <span class="nav-text">Pushy使用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#最佳实践"><span class="nav-number">2.4.</span> <span class="nav-text">最佳实践</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Pushy性能"><span class="nav-number">3.</span> <span class="nav-text">Pushy性能</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#思考"><span class="nav-number">4.</span> <span class="nav-text">思考</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">海盐</span>
+</div>
+
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.0"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.0"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+    
+
+    
+      <!-- UY BEGIN -->
+      <script type="text/javascript" src="http://v2.uyan.cc/code/uyan.js?uid=2149188"></script>
+      <!-- UY END -->
+    
+  
+
+
+
+
+
+  
+
+
+
+  
+  
+
+  
+  
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.1.js"></script>
+  <script>AV.initialize("4HPyL9KkddLv8glmVuEjl2eW-gzGzoHsz", "Cs5WwaTeiQ4OOSc1b5LRETHK");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+
+  
+
+</body>
+</html>
+<a href="https://github.com/liuyan731"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/38ef81f8aca64bb9a64448d0d70f1308ef5341ab/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6461726b626c75655f3132313632312e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png"></a>
