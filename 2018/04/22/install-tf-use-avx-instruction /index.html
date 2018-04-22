@@ -89,25 +89,28 @@
 
 <meta name="description" content="Blog的Github地址：https://github.com/liuyan731/blog
 
-最近上线了一个图片分类的机器学习Python服务，但是在线上的性能并不是特别好，就开始进行痛苦的性能分析。今天分享一个简单但是非常实用的Tensorflow性能调优工具Timeline。
-简介Tensorflow的Timeline模块是用于描述张量图一个工具，可以记录在会话中每个操作执行时间和资源分配">
+最近上线了两个机器学习Python服务，但是在线上的性能并不是特别好，而且CPU的负载非常高。然后发现是安装的Tensorflow未使用AVX指令集导致的。今天分享一下调试方法和解决方案。
+未使用AVX指令集warning最近发现线上Tensorflow python服务CPU消耗过高，服务性能也非常">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Tensorflow Timeline介绍及简单使用">
-<meta property="og:url" content="http://yoursite.com/2018/04/22/tf-timeline-tool/index.html">
+<meta property="og:title" content="安装Tensorflow使用AVX指令集">
+<meta property="og:url" content="http://yoursite.com/2018/04/22/install-tf-use-avx-instruction /index.html">
 <meta property="og:site_name" content="Sea Salt">
 <meta property="og:description" content="Blog的Github地址：https://github.com/liuyan731/blog
 
-最近上线了一个图片分类的机器学习Python服务，但是在线上的性能并不是特别好，就开始进行痛苦的性能分析。今天分享一个简单但是非常实用的Tensorflow性能调优工具Timeline。
-简介Tensorflow的Timeline模块是用于描述张量图一个工具，可以记录在会话中每个操作执行时间和资源分配">
-<meta property="og:image" content="https://raw.githubusercontent.com/liuyan731/tuchuang/master/blog/tf-timeline.png">
-<meta property="og:updated_time" content="2018-04-22T12:53:34.641Z">
+最近上线了两个机器学习Python服务，但是在线上的性能并不是特别好，而且CPU的负载非常高。然后发现是安装的Tensorflow未使用AVX指令集导致的。今天分享一下调试方法和解决方案。
+未使用AVX指令集warning最近发现线上Tensorflow python服务CPU消耗过高，服务性能也非常">
+<meta property="og:image" content="https://raw.githubusercontent.com/liuyan731/tuchuang/master/blog/tf-avx-1.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/liuyan731/tuchuang/master/blog/tf-avx-2.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/liuyan731/tuchuang/master/blog/tf-avx-4.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/liuyan731/tuchuang/master/blog/tf-avx-3.png">
+<meta property="og:updated_time" content="2018-04-22T13:42:51.840Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Tensorflow Timeline介绍及简单使用">
+<meta name="twitter:title" content="安装Tensorflow使用AVX指令集">
 <meta name="twitter:description" content="Blog的Github地址：https://github.com/liuyan731/blog
 
-最近上线了一个图片分类的机器学习Python服务，但是在线上的性能并不是特别好，就开始进行痛苦的性能分析。今天分享一个简单但是非常实用的Tensorflow性能调优工具Timeline。
-简介Tensorflow的Timeline模块是用于描述张量图一个工具，可以记录在会话中每个操作执行时间和资源分配">
-<meta name="twitter:image" content="https://raw.githubusercontent.com/liuyan731/tuchuang/master/blog/tf-timeline.png">
+最近上线了两个机器学习Python服务，但是在线上的性能并不是特别好，而且CPU的负载非常高。然后发现是安装的Tensorflow未使用AVX指令集导致的。今天分享一下调试方法和解决方案。
+未使用AVX指令集warning最近发现线上Tensorflow python服务CPU消耗过高，服务性能也非常">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/liuyan731/tuchuang/master/blog/tf-avx-1.png">
 
 
 
@@ -135,13 +138,13 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/2018/04/22/tf-timeline-tool/"/>
+  <link rel="canonical" href="http://yoursite.com/2018/04/22/install-tf-use-avx-instruction /"/>
 
 
 
 
 
-  <title> Tensorflow Timeline介绍及简单使用 | Sea Salt </title>
+  <title> 安装Tensorflow使用AVX指令集 | Sea Salt </title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -280,7 +283,7 @@
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/04/22/tf-timeline-tool/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/04/22/install-tf-use-avx-instruction /">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="海盐">
@@ -301,7 +304,7 @@
             
             
               
-                Tensorflow Timeline介绍及简单使用
+                安装Tensorflow使用AVX指令集
               
             
           </h1>
@@ -356,7 +359,7 @@
 
           
           
-             <span id="/2018/04/22/tf-timeline-tool/" class="leancloud_visitors" data-flag-title="Tensorflow Timeline介绍及简单使用">
+             <span id="/2018/04/22/install-tf-use-avx-instruction /" class="leancloud_visitors" data-flag-title="安装Tensorflow使用AVX指令集">
                <span class="post-meta-divider">|</span>
                <span class="post-meta-item-icon">
                  <i class="fa fa-eye"></i>
@@ -387,13 +390,39 @@
       
         <p><em>Blog的Github地址：<a href="https://github.com/liuyan731/blog" target="_blank" rel="external">https://github.com/liuyan731/blog</a></em></p>
 <hr>
-<p>最近上线了一个图片分类的机器学习Python服务，但是在线上的性能并不是特别好，就开始进行痛苦的性能分析。今天分享一个简单但是非常实用的Tensorflow性能调优工具Timeline。</p>
-<h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>Tensorflow的Timeline模块是用于描述张量图一个工具，可以记录在会话中每个操作执行时间和资源分配及消耗的情况。</p>
-<h2 id="使用方法"><a href="#使用方法" class="headerlink" title="使用方法"></a>使用方法</h2><h3 id="执行代码sess-run-加入参数options和run-metadata"><a href="#执行代码sess-run-加入参数options和run-metadata" class="headerlink" title="执行代码sess.run()加入参数options和run_metadata"></a>执行代码sess.run()加入参数options和run_metadata</h3><p>sess.run() 加入 option和run_metadata参数，然后创建timeline对象，并写入到timeline.json文件中</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">import</span> tensorflow <span class="keyword">as</span> tf</div><div class="line"><span class="keyword">from</span> tensorflow.python.client <span class="keyword">import</span> timeline</div><div class="line"></div><div class="line">run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)</div><div class="line">run_metadata = tf.RunMetadata()</div><div class="line"></div><div class="line">predictions = use_sess.run(use_out, &#123;<span class="string">'DecodeJpeg/contents:0'</span>: image_file.file.getvalue()&#125;, options=run_options, run_metadata=run_metadata)</div><div class="line"></div><div class="line"><span class="comment"># Create the Timeline object, and write it to a json</span></div><div class="line">tl = timeline.Timeline(run_metadata.step_stats)</div><div class="line">ctf = tl.generate_chrome_trace_format()</div><div class="line"><span class="keyword">with</span> open(<span class="string">'timeline.json'</span>, <span class="string">'w'</span>) <span class="keyword">as</span> f:</div><div class="line">    f.write(ctf)</div></pre></td></tr></table></figure>
-<h3 id="查看timeline对象"><a href="#查看timeline对象" class="headerlink" title="查看timeline对象"></a>查看timeline对象</h3><p>打开Google Chrome，转到该页面 chrome://tracing并加载该timeline.json文件。在该页面上可以每个操作的耗时，以及op的详细信息。</p>
-<p><img src="https://raw.githubusercontent.com/liuyan731/tuchuang/master/blog/tf-timeline.png" alt="timeline-tool"><br><em>chrome 加载timeline.json文件后展示的运行图</em></p>
-<hr>
+<p>最近上线了两个机器学习Python服务，但是在线上的性能并不是特别好，而且CPU的负载非常高。然后发现是安装的Tensorflow未使用AVX指令集导致的。今天分享一下调试方法和解决方案。</p>
+<h2 id="未使用AVX指令集warning"><a href="#未使用AVX指令集warning" class="headerlink" title="未使用AVX指令集warning"></a>未使用AVX指令集warning</h2><p>最近发现线上Tensorflow python服务CPU消耗过高，服务性能也非常差，然后分析原因，测试服务器上使用timeline工具查看预测操作的耗时如下图：</p>
+<p><img src="https://raw.githubusercontent.com/liuyan731/tuchuang/master/blog/tf-avx-1.png" alt="timelime-img-1"></p>
+<p>发现整个计算过程消耗时间过长（30ms）对比本机（使用GPU加速，服务器机器只用于提供服务，无GPU）耗时差别巨大（1ms，如下图）</p>
+<p><img src="https://raw.githubusercontent.com/liuyan731/tuchuang/master/blog/tf-avx-2.png" alt="timelime-img-2"></p>
+<p>同时发现两个timeline上面的op的名称不一样，在测试服务器上操作为：_MklConv2DWithBias、_MklRelu等，在本机上为Conv2D、Relu等。</p>
+<p>这时想到在运行Tensorflow的时候，import会warning提示没有使用intel avx、sse指令集：</p>
+<blockquote>
+<p>Your CPU supports instructions that this TensorFlow binary was not compiled to use: AVX AVX2</p>
+<p>The TensorFlow library wasn’t compiled to use SSE4.1 instructions, but these are available on your machine and could speed up CPU computations.</p>
+<p>The TensorFlow library wasn’t compiled to use SSE4.2 instructions, but these are available on your machine and could speed up CPU computations.</p>
+<p>The TensorFlow library wasn’t compiled to use AVX instructions, but these are available on your machine and could speed up CPU computations.</p>
+</blockquote>
+<p>因为这个只是warning并不影响程序的运行，所以一直没有在意，同时当时在网上查找解决方案，有很多“建议”让不管或直接把这个warning关掉…</p>
+<p>考虑到这个AVX/SSE指令集可能会提高性能，所以着手重新编译安装Tensorflow，编译安装可以参考：<a href="https://stackoverflow.com/questions/41293077/how-to-compile-tensorflow-with-sse4-2-and-avx-instructions" target="_blank" rel="external">https://stackoverflow.com/questions/41293077/how-to-compile-tensorflow-with-sse4-2-and-avx-instructions</a> ，过程还是有点复杂，需要使用bazel。</p>
+<p>但是我并没有真正去编译安装orz，因为发现我们使用的Tensorflow 1.6.0 已经开始使用AVX指令集进行预编译了，如下图：</p>
+<p><img src="https://raw.githubusercontent.com/liuyan731/tuchuang/master/blog/tf-avx-4.png" alt="tf-release"></p>
+<p>但是为何还是会有warning警告呢？</p>
+<h2 id="pip与conda安装的Tensorflow不一致？"><a href="#pip与conda安装的Tensorflow不一致？" class="headerlink" title="pip与conda安装的Tensorflow不一致？"></a>pip与conda安装的Tensorflow不一致？</h2><p>与小组的另一位同学讨论，发现他使用的tensorflow1.6.0并不会有avx warning，细问之下发现他是使用pip（阿里云）安装的，而我是使用conda（清华镜像）安装的。</p>
+<p>考虑到conda镜像和pip镜像的可能不一致，将conda安装的Tensorflow卸载，重新使用pip安装，avx warning消失。</p>
+<p>重新运行服务并打印timeline，如下图：</p>
+<p><img src="https://raw.githubusercontent.com/liuyan731/tuchuang/master/blog/tf-avx-3.png" alt="timelime-img-3"></p>
+<p>整体时间下降到2ms，性能大大提升，同时CPU负载大大降低！至此性能优化到合理的水平。</p>
+<p>所以至少对于Tensorflow 1.6.0版本pip安装与conda安装是不一致的。</p>
+<p>ps</p>
+<ul>
+<li>使用pip安装完Tensorflow后，重新import tensorflow报错：ImportError: /usr/lib64/libstdc++.so.6: version CXXABI_1.3.7’ not found 的<a href="http://libowei.net/ImportError-usr-lib64-libstdc-so-6-version-CXXABI-1-3-7%E2%80%99-not-found.html" target="_blank" rel="external">解决方案</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Advanced_Vector_Extensions" target="_blank" rel="external">AVX</a>：<br>Advanced Vector Extensions(AVX) are extensions to the x86 instruction set architecture for microprocessors from Intel and AMD proposed by Intel in March 2008 and first supported by Intel with the Sandy Bridge processor shipping in Q1 2011 and later on by AMD with the Bulldozer processor shipping in Q3 2011. AVX provides new features, new instructions and a new coding scheme.</li>
+<li><a href="https://en.wikipedia.org/wiki/Streaming_SIMD_Extensions" target="_blank" rel="external">SSE</a>：In computing, Streaming SIMD Extensions (SSE) is an SIMD instruction set extension to the x86 architecture, designed by Intel and introduced in 1999 in their Pentium III series of processors shortly after the appearance of AMD’s 3DNow!. SSE contains 70 new instructions, most of which work on single precision floating point data. SIMD instructions can greatly increase performance when exactly the same operations are to be performed on multiple data objects. Typical applications are digital signal processing and graphics processing.</li>
+</ul>
+<h2 id="补充"><a href="#补充" class="headerlink" title="补充"></a>补充</h2><h3 id="TF-Timeline模块"><a href="#TF-Timeline模块" class="headerlink" title="TF Timeline模块"></a>TF Timeline模块</h3><p>参考：<a href="https://liuyan731.github.io/2018/04/22/tf-timeline-tool/" target="_blank" rel="external">Tensorflow Timeline介绍及简单使用</a></p>
+<h3 id="pip使用国内镜像"><a href="#pip使用国内镜像" class="headerlink" title="pip使用国内镜像"></a>pip使用国内镜像</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">mkdir .pip</div><div class="line">vi .pip/pip.conf</div><div class="line"> </div><div class="line">[list]</div><div class="line">format=columns</div><div class="line"> </div><div class="line">[global]</div><div class="line">index-url = http://mirrors.aliyun.com/pypi/simple/</div><div class="line"> </div><div class="line">[install]</div><div class="line">trusted-host=mirrors.aliyun.com</div></pre></td></tr></table></figure>
+<h2 id="思考"><a href="#思考" class="headerlink" title="思考"></a>思考</h2><p>程序中的warning也是需要引起大家足够的重视，说不定里面就有一个大坑。。。</p>
 <p><em>2018/4/22 done</em></p>
 <p><em>此文章也同步至<a href="https://liuyan731.github.io/" target="_blank" rel="external">个人Github博客</a></em></p>
 
@@ -440,8 +469,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2018/04/22/install-tf-use-avx-instruction /" rel="next" title="安装Tensorflow使用AVX指令集">
-                <i class="fa fa-chevron-left"></i> 安装Tensorflow使用AVX指令集
+              <a href="/2017/12/05/How-To-Use-APNs-Pushy/" rel="next" title="使用Pushy进行APNs消息推送">
+                <i class="fa fa-chevron-left"></i> 使用Pushy进行APNs消息推送
               </a>
             
           </div>
@@ -449,6 +478,10 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/04/22/tf-timeline-tool/" rel="prev" title="Tensorflow Timeline介绍及简单使用">
+                Tensorflow Timeline介绍及简单使用 <i class="fa fa-chevron-right"></i>
+              </a>
             
           </div>
         </div>
@@ -641,7 +674,7 @@ var jiathis_config = {data_track_clickback:'true'};
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#简介"><span class="nav-number">1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#使用方法"><span class="nav-number">2.</span> <span class="nav-text">使用方法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#执行代码sess-run-加入参数options和run-metadata"><span class="nav-number">2.1.</span> <span class="nav-text">执行代码sess.run()加入参数options和run_metadata</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#查看timeline对象"><span class="nav-number">2.2.</span> <span class="nav-text">查看timeline对象</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#未使用AVX指令集warning"><span class="nav-number">1.</span> <span class="nav-text">未使用AVX指令集warning</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#pip与conda安装的Tensorflow不一致？"><span class="nav-number">2.</span> <span class="nav-text">pip与conda安装的Tensorflow不一致？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#补充"><span class="nav-number">3.</span> <span class="nav-text">补充</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#TF-Timeline模块"><span class="nav-number">3.1.</span> <span class="nav-text">TF Timeline模块</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#pip使用国内镜像"><span class="nav-number">3.2.</span> <span class="nav-text">pip使用国内镜像</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#思考"><span class="nav-number">4.</span> <span class="nav-text">思考</span></a></li></ol></div>
             
 
           </div>
